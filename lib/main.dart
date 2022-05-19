@@ -5,9 +5,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-//import 'package:image_cropper/image_cropper.dart';
-//import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:study_kakaotalk_profile_edit/src/controller/profile_controller.dart';
 import 'package:study_kakaotalk_profile_edit/src/profile.dart';
+
 
 // import 'cropper/ui_helper.dart'
 //     if (dart.library.io) 'cropper/mobile_ui_helper.dart'
@@ -60,6 +62,9 @@ class MyApp extends StatelessWidget {
                   (states) => const BorderSide(color: Color(0xFFBC764A))),
             ),
           )),
+      initialBinding: BindingsBuilder(() {
+        Get.lazyPut<ProfileController>(() => ProfileController());
+      }),
       home: Profile(),
     );
   }
