@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:study_kakaotalk_profile_edit/src/component/text_editor_widget.dart';
+import 'package:study_kakaotalk_profile_edit/src/controller/image_crop_controller.dart';
 import 'package:study_kakaotalk_profile_edit/src/controller/profile_controller.dart';
 
 class Profile extends GetView<ProfileController> {
@@ -14,46 +15,61 @@ class Profile extends GetView<ProfileController> {
       top: Get.mediaQuery.padding.top,
       left: 0,
       right: 0,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            GestureDetector(
-              onTap: () {
-                debugPrint("프로필 편집 취소");
-                controller.toggleEditProfile();
-              },
-              child: Row(
-                children: const [
-                  Icon(
-                    Icons.arrow_back_ios,
-                    color: Colors.white,
-                    size: 16,
-                  ),
-                  Text(
-                    "프로필 편집",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white,
+      child: Obx(
+        () => Container(
+          padding: const EdgeInsets.all(20),
+          child: controller.isEditMyProfile.value
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    GestureDetector(
+                      onTap: controller.rollback,
+                      child: Row(
+                        children: const [
+                          Icon(
+                            Icons.arrow_back_ios,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          Text(
+                            "프로필 편집",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                debugPrint("프로필 편집 저장");
-              },
-              child: const Text(
-                "완료",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.white,
+                    GestureDetector(
+                      onTap: () {
+                        debugPrint("프로필 편집 저장");
+                        //controller.toggleEditProfile();
+                        controller.save();
+                      },
+                      child: const Text(
+                        "완료",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Icon(Icons.close_sharp, color: Colors.white),
+                    Row(
+                      children: [
+                        Icon(Icons.qr_code, color: Colors.white),
+                        SizedBox(width: 10),
+                        Icon(Icons.settings, color: Colors.white)
+                      ],
+                    )
+                  ],
                 ),
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -68,9 +84,19 @@ class Profile extends GetView<ProfileController> {
         child: GestureDetector(
           onTap: () {
             debugPrint("change!");
+            controller.pickImage(PROFILE_IMAGE_TYPE.BACKGROUND);
           },
-          child: Container(
-            color: Colors.transparent,
+          child: Obx(
+            () => Container(
+              child: controller.myProfile.value.backgroundFile == null
+                  ? Container(
+                      color: Colors.transparent,
+                    )
+                  : Image.file(
+                      controller.myProfile.value.backgroundFile!,
+                      fit: BoxFit.cover,
+                    ),
+            ),
           ),
         ));
   }
@@ -201,45 +227,54 @@ class Profile extends GetView<ProfileController> {
   }
 
   Widget _myProfile_profileImage() {
-    return Container(
-      width: 120,
-      height: 120,
-      child: Stack(
-        children: [
-          Center(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(30),
-              child: Container(
-                width: 100,
-                height: 100,
-                child: Image.network(
-                  "https://i.stack.imgur.com/l60Hf.png",
-                  fit: BoxFit.cover,
-                ),
+    return GestureDetector(
+      onTap: () {
+        controller.pickImage(PROFILE_IMAGE_TYPE.AVARTAR);
+      },
+      child: Container(
+        width: 120,
+        height: 120,
+        child: Stack(
+          children: [
+            Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(30),
+                child: Container(
+                    width: 100,
+                    height: 100,
+                    child: controller.myProfile.value.avatarFile == null
+                        ? Image.network(
+                            "https://i.stack.imgur.com/l60Hf.png",
+                            fit: BoxFit.cover,
+                          )
+                        : Image.file(
+                            controller.myProfile.value.avatarFile!,
+                            fit: BoxFit.cover,
+                          )),
               ),
             ),
-          ),
-          controller.isEditMyProfile.value
-              ? Positioned(
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                  child: Container(
-                    alignment: Alignment.bottomRight,
+            controller.isEditMyProfile.value
+                ? Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
                     child: Container(
-                      padding: const EdgeInsets.all(7),
-                      decoration: BoxDecoration(
-                          shape: BoxShape.circle, color: Colors.white),
-                      child: Icon(
-                        Icons.camera_alt,
-                        size: 20,
+                      alignment: Alignment.bottomRight,
+                      child: Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle, color: Colors.white),
+                        child: Icon(
+                          Icons.camera_alt,
+                          size: 20,
+                        ),
                       ),
                     ),
-                  ),
-                )
-              : Container()
-        ],
+                  )
+                : Container()
+          ],
+        ),
       ),
     );
   }
@@ -251,7 +286,7 @@ class Profile extends GetView<ProfileController> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Text(
-            "AR",
+            controller.myProfile.value.name,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w400,
@@ -260,7 +295,7 @@ class Profile extends GetView<ProfileController> {
           ),
         ),
         Text(
-          "안녕하세요! 이아람입니다.",
+          controller.myProfile.value.discription,
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w400,

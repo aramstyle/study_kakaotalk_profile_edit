@@ -19,7 +19,23 @@ class UserModel {
     this.discription = "",
     this.avatarUrl = "",
     this.backgroundUrl = "",
+    this.avatarFile,
+    this.backgroundFile,
     this.lastLoginTime,
     this.createdTime,
   });
+
+  UserModel.clone(UserModel user)
+      : this(
+          uid: user.uid,
+          docId: user.docId,
+          name: user.name,
+          discription: user.discription,
+          avatarUrl: user.avatarUrl,
+          backgroundUrl: user.backgroundUrl,
+          avatarFile: user.avatarFile,
+          backgroundFile: user.backgroundFile,
+          lastLoginTime: user.lastLoginTime,
+          createdTime: user.createdTime,
+        );
 }
