@@ -2,6 +2,7 @@
 
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -14,9 +15,24 @@ enum PROFILE_IMAGE_TYPE {
 }
 
 class ProfileController extends GetxController {
+  static ProfileController get to => Get.find();
+
   RxBool isEditMyProfile = false.obs;
   UserModel originMyProfile = UserModel(name: "닉네임", discription: "설명을 입력해주세요");
   Rx<UserModel> myProfile = UserModel().obs;
+
+  void authStateCanges(User? firebaseUser) {
+    if (firebaseUser != null) {
+      UserModel user = UserModel(
+        uid: firebaseUser.uid,
+        name: firebaseUser.displayName!,
+        avatarUrl: firebaseUser.photoURL!,
+        createdTime: DateTime.now(),
+        lastLoginTime: DateTime.now(),
+      );
+      print(firebaseUser.toString());
+    }
+  }
 
   @override
   void onInit() {
